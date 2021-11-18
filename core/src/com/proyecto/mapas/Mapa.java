@@ -7,7 +7,6 @@ import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.proyecto.piezas.Cuadrado;
 import com.proyecto.utiles.Config;
 import com.proyecto.utiles.Mundo;
-import com.proyecto.utiles.Utiles;
 
 public class Mapa {
 	
@@ -118,15 +117,7 @@ public class Mapa {
 			}
 			
 		}
-//		for (int i = 0; i < arreglo.size(); i++) {
-//			for(int j = 0;j < arreglo.size()-i;j++) {
-//				if(arreglo.get(j).getYGrilla(spr.getY()) > arreglo.get(j+1).getYGrilla(spr.getY())) {
-//					auxiliar = arreglo.get(j);
-//					arreglo.set(j, arreglo.get(j+1));
-//					arreglo.set(j+1, auxiliar);
-//				}   
-//			}
-//	}
+
 	
   }
 public void masAltoMasBajo(){

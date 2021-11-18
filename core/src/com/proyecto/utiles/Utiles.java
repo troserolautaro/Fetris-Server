@@ -6,8 +6,6 @@ import java.util.Random;
 import java.util.Scanner;
 
 import com.proyecto.juego.JuegoEventListener;
-import com.proyecto.mapas.Mapa;
-import com.proyecto.pantallas.ScreenJuego;
 
 
 public final class Utiles {
@@ -77,13 +75,7 @@ public final class Utiles {
         return valor;
     }
 
-public static Mapa obtenerMapa() {
-	ScreenJuego sj = (ScreenJuego) Mundo.app.getScreen();
-	return sj.getJuego().getMapa();
-	
-	
-		
-	}
+
 
 	
 }

@@ -3,42 +3,54 @@ package com.proyecto.juego;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.graphics.Texture;
 import com.proyecto.evento.KeyListener;
 import com.proyecto.mapas.Mapa;
 import com.proyecto.piezas.Colores;
 import com.proyecto.piezas.Cuadrado;
 import com.proyecto.piezas.Pieza;
+import com.proyecto.utiles.Assets;
 import com.proyecto.utiles.Mundo;
 import com.proyecto.utiles.Utiles;
 
 public class Juego implements JuegoEventListener{
 	private Mapa mapa;
-	private boolean nueva;
+	private boolean nueva=true;
 	public KeyListener io = new KeyListener();
 	private float tiempoMov;
 	private float intervaloCaida= 0.6f;
 	private Pieza p;
+	private int indice;
+
 	public Juego(boolean mapa) {
 		Utiles.listeners.add(this);
 		Gdx.input.setInputProcessor(io);
 		this.mapa = new Mapa(mapa);
-		nueva=true;
+		if(mapa) {
+			indice=1;
+		}else {
+			indice=2;
+		}
 	}
 	public void update(OrthographicCamera cam, float delta) {
-		if(nueva) {
-			nuevaPieza();
-			nueva=!nueva;
-		}
-		Mundo.batch.setProjectionMatrix(cam.combined);
-		cam.update();
-		updatePieza();
+			if(nueva) {
+				nuevaPieza();
+				nueva=!nueva;
+			}
+			Mundo.batch.setProjectionMatrix(cam.combined);
+			cam.update();
+			updatePieza();
+	
+		
 	
 
 	}
 	public void nuevaPieza() {
 		int ind = Utiles.r.nextInt(Colores.values().length-1);
-		p = new Pieza(Colores.values()[ind].getDir(), 12,mapa.getSpr().getX()+ mapa.getSpr().getWidth()/2 , mapa.getSpr().getY()+mapa.getSpr().getHeight() - 24,19,4);
+		p = new Pieza(Assets.manager.get(Colores.values()[ind].getDir(),Texture.class), 12,mapa.getSpr().getX()+ mapa.getSpr().getWidth()/2 , mapa.getSpr().getY()+mapa.getSpr().getHeight() - 24,19,4, indice, ind);
+		
 	}
+	
 	public Mapa getMapa() {
 		return mapa;
 	}
@@ -57,8 +69,10 @@ public class Juego implements JuegoEventListener{
 		tiempoMov+=Gdx.graphics.getDeltaTime();
 		if(tiempoMov>intervaloCaida) {
 			bajarPieza();
+			Mundo.app.getSv().getHs().enviarMensajeGeneral("bajar"+ "!" + indice);
 			tiempoMov=0;
 			}
+		
 			
 		}
 	
@@ -167,7 +181,6 @@ public void bajarPieza() {
 @Override
 public void keyDown(int keycode) {
 	if(io.isUp()) {
-		girarPieza();
 	}
 	if(io.isDown()) {
 		bajarPieza();
@@ -220,96 +233,101 @@ private boolean colisionRotacion(boolean[][] nuevaPieza) {
 		}
 		return girar;
 		}
-
-		
-		
-
-
-private void girarPieza() { //Odio este codigo
-	boolean[][] new_piece = new boolean[p.getTipo().length][p.getTipo()[0].length];
-	for(int i = 0; i < p.getTipo().length; i++){
-		for(int j = 0; j < p.getTipo()[i].length; j++){
-			new_piece[j][ p.getTipo().length - 1 - i ] = p.getTipo()[i][j]; //i=0 j=1
-		}
-	}
-	if(colisionRotacion(new_piece)) {
-		p= new Pieza(p.getText(), p.getTamaño(), p.getX(), p.getY(),p.getFilaY(),p.getFilaX(), new_piece, mapa.getSpr().getX()+ p.getTamaño(), mapa.getSpr().getY()+p.getTamaño());
-	}
 	
-	}
+			
+			
 	
-
-@Override
-public void keyUp(int keycode) {
-	if(io.isUp()) {
-		
-	}
-	if(io.isDown()) {
-		
-	}
-	if(io.isRight()) {
-		
-	}
-	if(io.isLeft()) {
-		
-	}
-	if(io.isSpace()) {
-		
-	}
-}
-
-public void verifLineaCompl() {
-	int lineas =0;
-	for (int i = 0; i < mapa.getGrilla().length; i++) { //Posicion Y
-		int tmp=0;
-		for (int j = 0; j < mapa.getGrilla()[i].length; j++) {//Posicion X
-			if(mapa.getGrilla()[i][j]) {
-				tmp++;
+	
+	public void girarPieza(int indice) { //Odio este codigo
+		boolean[][] new_piece = new boolean[p.getTipo().length][p.getTipo()[0].length];
+		for(int i = 0; i < p.getTipo().length; i++){
+			for(int j = 0; j < p.getTipo()[i].length; j++){
+				new_piece[j][ p.getTipo().length - 1 - i ] = p.getTipo()[i][j]; //i=0 j=1
 			}
 		}
-		if(tmp==mapa.getGrilla()[i].length) {
-			mapa.borrarLinea(i);  
-			lineas++;
-		}
-	}
-	if(lineas>0) {
-		mapa.bajarCuadrados();
-		enviarLineas(lineas);
-	}
-	}
-
-
-@Override
-public void enviarLineas(int lineas) {
-	for (int i = 0; i < Utiles.listeners.size(); i++) {
-		if(Utiles.listeners.get(i)!=this) {
-			Utiles.listeners.get(i).recibirLineas(lineas);
-		}
-	}
-	
-	
-}
-
-@Override
-public void recibirLineas(int lineas) {
-		int bloqueBorrado = Utiles.r.nextInt(mapa.getGrilla()[0].length );
-		for (int i = 0; i < lineas; i++) {
-			mapa.masAltoMasBajo();
-			mapa.subirCuadrados(0);
-			añadirLinea(0, bloqueBorrado);
-		}
-}
-private void añadirLinea(int y, int bloqueBorrado) {
-	for (int i = 0; i < mapa.getGrilla()[y].length; i++) {
-		if(i!=bloqueBorrado) {
-			mapa.getCuadrados().add((new Cuadrado(Colores.AMARILLO.getDir(), 12, i*12 + mapa.getSpr().getX()+12 , y + mapa.getSpr().getY() +12 )));
+		if(colisionRotacion(new_piece)) {
+			p= new Pieza(p.getText(), p.getTamaño(), p.getX(), p.getY(),p.getFilaY(),p.getFilaX(), new_piece, mapa.getSpr().getX()+ p.getTamaño(), mapa.getSpr().getY()+p.getTamaño());
+				}
+		
 		}
 		
+	
+	@Override
+	public void keyUp(int keycode) {
+		if(io.isUp()) {
+			
+		}
+		if(io.isDown()) {
+			
+		}
+		if(io.isRight()) {
+			
+		}
+		if(io.isLeft()) {
+			
+		}
+		if(io.isSpace()) {
+			
+		}
 	}
-	for (int i = 0; i < mapa.getCuadrados().size(); i++) {
-		mapa.agregarAGrilla(mapa.getCuadrados().get(i));
+	
+	public void verifLineaCompl() {
+		int lineas =0;
+		for (int i = 0; i < mapa.getGrilla().length; i++) { //Posicion Y
+			int tmp=0;
+			for (int j = 0; j < mapa.getGrilla()[i].length; j++) {//Posicion X
+				if(mapa.getGrilla()[i][j]) {
+					tmp++;
+				}
+			}
+			if(tmp==mapa.getGrilla()[i].length) {
+				mapa.borrarLinea(i);  
+				lineas++;
+			}
+		}
+		if(lineas>0) {
+			mapa.bajarCuadrados();
+			enviarLineas(lineas);
+		}
+		}
+	
+	
+	@Override
+	public void enviarLineas(int lineas) {
+		for (int i = 0; i < Utiles.listeners.size(); i++) {
+			if(Utiles.listeners.get(i)!=this) {
+				Utiles.listeners.get(i).recibirLineas(lineas);
+			}
+		}
+		
+		
 	}
-}
+	
+	@Override
+	public void recibirLineas(int lineas) {
+			int bloqueBorrado = Utiles.r.nextInt(mapa.getGrilla()[0].length );
+			for (int i = 0; i < lineas; i++) {
+				mapa.masAltoMasBajo();
+				mapa.subirCuadrados(0);
+				añadirLinea(0, bloqueBorrado);
+			}
+	}
+	
+	private void añadirLinea(int y, int bloqueBorrado) {
+		for (int i = 0; i < mapa.getGrilla()[y].length; i++) {
+			if(i!=bloqueBorrado) {
+				mapa.getCuadrados().add((new Cuadrado(Assets.manager.get(Colores.AMARILLO.getDir(),Texture.class), 12, i*12 + mapa.getSpr().getX()+12 , y + mapa.getSpr().getY() +12 )));
+			}
+			
+		}
+		for (int i = 0; i < mapa.getCuadrados().size(); i++) {
+			mapa.agregarAGrilla(mapa.getCuadrados().get(i));
+		}
+	}
+
+	public int getIndice() {
+		return indice;
+	}
 }
 
 	

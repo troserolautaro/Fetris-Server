@@ -4,39 +4,37 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
-import com.badlogic.gdx.math.Vector3;
-import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.proyecto.juego.Juego;
 import com.proyecto.utiles.Config;
+import com.proyecto.utiles.Mundo;
 
 public class ScreenJuego implements Screen {
  private Juego juego;
  private Juego juego2;
  private OrthographicCamera cam;
- private Stage stage;
+private boolean creado=false;
 	@Override
 	public void show() {
-		stage= new Stage();
+		Mundo.app.getSv().getHs().enviarMensajeGeneral("Empieza");
 		iniciarCam();
-		juego2= new Juego(false);
 		juego= new Juego(true);
+		juego2= new Juego(false);
 	}
 
-	public Juego getJuego() {
-		return juego;
-	}
 
 	@Override
 	public void render(float delta) {
-		Gdx.gl.glClearColor(0, 0, 0, 0);
-		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-		stage.draw();
-		juego.update(cam, delta);
-		juego2.update(cam, delta);
-		juego.render();
-		juego2.render();
-//		debug();
-		cam.update();
+		if(creado) {
+			Gdx.gl.glClearColor(0, 0, 0, 0);
+			Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+			juego.update(cam, delta);
+			juego2.update(cam, delta);
+			juego.render();
+			juego2.render();	
+		}
+			
+//			debug();			
+		
 	}
 	
 //	private void debug() {
@@ -79,8 +77,7 @@ public class ScreenJuego implements Screen {
 
 	@Override
 	public void pause() {
-		// TODO Auto-generated method stub
-		
+	
 	}
 
 	@Override
@@ -106,5 +103,14 @@ public class ScreenJuego implements Screen {
 			cam.zoom=1f;
 		cam.update();
 	}
-
+	
+	public void setCreado(boolean creado) {
+		this.creado=creado;
+	}
+	public Juego getJuego() {
+		return juego;
+	}
+	public Juego getJuego2() {
+		return juego2;
+	}
 }

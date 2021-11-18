@@ -1,5 +1,6 @@
 package com.proyecto.piezas;
 
+import com.badlogic.gdx.graphics.Texture;
 import com.proyecto.utiles.Mundo;
 import com.proyecto.utiles.Utiles;
 
@@ -7,51 +8,34 @@ public class Pieza {
 	private Cuadrado[] tetromino= new Cuadrado[4];
 	private boolean[][] tipoTmp;
 	private boolean[][]	tipo;
-	private String text;
+	private Texture text;
 	private int tamaño;
 	private float x,y;
 	private int filaX;
 	private int filaY;
-	public Cuadrado[] getTetromino() {
-		return tetromino;
-	}
-
-	public Pieza(String text, int tamaño, float x, float y, int filaY, int filaX) {
+	
+	public Pieza(Texture text, int tamaño, float x, float y, int filaY, int filaX, int indice, int textind) {
 		this.text=text;
 		this.tamaño=tamaño;
 		this.x=x;
 		this.y=y;
 		this.filaX=filaX;
 		this.filaY=filaY;
-		crearTetromino(text,tamaño,x,y);
+		crearTetromino(text,tamaño,x,y,indice, textind);
 	}
-	public void setX(float x) {
-		this.x = x;
-	}
-
-	public int getFilaY() {
-		return filaY;
-	}
-
-	public void setFilaY(int filaY) {
-		this.filaY = filaY;
-	}
-
-	public void setY(float y) {
-		this.y = y;
-	}
-
-	public Pieza(String text, int tamaño, float x, float y,int filaY,int filaX, boolean[][] piezaRotada, float correcionX, float correcionY) {
+	
+	public Pieza(Texture text, int tamaño, float x, float y,int filaY,int filaX, boolean[][] piezaRotada, float correcionX, float correcionY) {
 		this.text=text;
 		this.tamaño=tamaño;
 		this.x=x;
 		this.y=y;
 		this.filaX=filaX;
 		this.filaY=filaY;
-		crearTetromino(piezaRotada,correcionX,correcionY);
+		girarTetromino(piezaRotada,correcionX,correcionY);
 	}
-	public void crearTetromino(String text, int tamaño, float x, float y) {
-		buscarPieza();
+	
+	public void crearTetromino(Texture text, int tamaño, float x, float y, int indice, int textind) {
+		int pieza = buscarPieza();
 		for (int i = 0; i <tetromino.length; i++) {
 			int j=0;
 			boolean bandera=false;
@@ -68,13 +52,15 @@ public class Pieza {
 				j++;
 			}while(j<tipoTmp.length && !bandera);
 		}
+		Mundo.app.getSv().getHs().enviarMensajeGeneral("crearPieza" + "!" + textind + "!" + pieza + "!" + indice);
+		//Termina crearse la pieza
 	}
 	
 	public boolean[][] getTipoTmp() {
 		return tipoTmp;
 	}
 
-	public String getText() {
+	public Texture getText() {
 		return text;
 	}
 
@@ -90,7 +76,7 @@ public class Pieza {
 		return y;
 	}
 
-	public void crearTetromino(boolean[][] piezaRotada, float correcionX, float correcionY) {
+	public void girarTetromino(boolean[][] piezaRotada, float correcionX, float correcionY) {
 		asignarPieza(piezaRotada);
 		for (int i = 0; i <tetromino.length; i++) {
 			int j=0;
@@ -108,6 +94,7 @@ public class Pieza {
 				j++;
 			}while(j<tipoTmp.length && !bandera);
 		}
+		
 	}
 	public int getFilaX() {
 		return filaX;
@@ -117,13 +104,14 @@ public class Pieza {
 		this.filaX = filaX;
 	}
 	
-	private void buscarPieza() {
+	private int buscarPieza() {
 		int ind = Utiles.r.nextInt(Piezas.values().length);
 		boolean[][] tmp = Piezas.values()[ind].getPieza();
 		tipoTmp = new boolean [tmp.length][tmp[0].length];
 		tipo = new boolean [tmp.length][tmp[0].length];
 		clonarArray(tmp,tipoTmp);
 		clonarArray(tmp,tipo);
+		return ind;
 	}
 	private void asignarPieza(boolean[][] piezaRotada) {
 		boolean[][] tmp = piezaRotada;
@@ -150,77 +138,24 @@ public class Pieza {
 			this.tetromino[i].getSpr().draw(Mundo.batch);
 		}
 	}
-//	public int posAlta() {
-//		int max=0;
-//		for (int i = 0; i < tetromino.length; i++) {
-//			if(tetromino[i].getYGrilla()>max || i==0) {
-//				max=tetromino[i].getYGrilla();
-//			}
-//		
-//		}
-//		return max;
-//	}
-//	public int posBaja() {
-//		int min=0;
-//		for (int i = 0; i < tetromino.length; i++) {
-//			if(tetromino[i].getYGrilla()<min || i==0) {
-//				min=tetromino[i].getYGrilla();
-//			}
-//		
-//		}
-//		return min;
-//	}
-//	public int posIzq() {
-//		int min=0;
-//		for (int i = 0; i < tetromino.length; i++) {
-//			if(tetromino[i].getXGrilla()<min || i==0) {
-//				min=tetromino[i].getXGrilla();
-//			}
-//		
-//		}
-//	return min;
-//	}
-//	public int posDer() {
-//		int max=0;
-//		for (int i = 0; i < tetromino.length; i++) {
-//			if(tetromino[i].getXGrilla()>max || i==0) {
-//				max=tetromino[i].getXGrilla();
-//			}
-//		
-//		}
-//		return max;
-//	}
-//	public int[]  posX() {
-//		int[] pos = new int[2];
-//		for (int i = 0; i < pos.length; i++) {
-//			for (int j = 0; j < tipo.length; j++) {
-//				if(i==0) {
-//					if(tipo[0][j]) {
-//						if(j==0) {
-//							pos[i]=posIzq();
-//						}else if(j==1) {
-//							pos[i]=posIzq()-1; 
-//						}
-//					}
-//				
-//				}else if(i==1) {
-//					if(tipo[0][j]) {
-//						if(j==0) {
-//							pos[i]=posDer()+2; 
-//						}else if(j==1) {
-//							pos[i]=posDer()+1;
-//						}
-//					}
-//				}
-//			}
-//		}
-//		return pos;
-//	}
-//	public int[]  posY() {
-//		int[] pos = new int[tipo.length];
-//		return pos;
-//	}
-//	
+	public void setX(float x) {
+		this.x = x;
+	}
+
+	public int getFilaY() {
+		return filaY;
+	}
+
+	public void setFilaY(int filaY) {
+		this.filaY = filaY;
+	}
+
+	public void setY(float y) {
+		this.y = y;
+	}
+	public Cuadrado[] getTetromino() {
+		return tetromino;
+	}
 	}
 
 
