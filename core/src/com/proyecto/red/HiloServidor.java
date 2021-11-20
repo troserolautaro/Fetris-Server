@@ -81,10 +81,8 @@ public class HiloServidor extends Thread{
 			}
 			if(sj.getJuego().getIndice() ==Integer.valueOf(comando[1])) {
 				sj.getJuego().bajarPieza();	 
-				enviarMensaje("bajar" + "!" + Integer.valueOf(comando[1]), Mundo.app.getSv().getClientes().get(1).getIp(), Mundo.app.getSv().getClientes().get(1).getPuerto());
 			}else {
 				sj.getJuego2().bajarPieza();
-				enviarMensaje("bajar" + "!" + Integer.valueOf(comando[1]), Mundo.app.getSv().getClientes().get(0).getIp(), Mundo.app.getSv().getClientes().get(0).getPuerto());
 			}
 	
 		
@@ -98,10 +96,8 @@ public class HiloServidor extends Thread{
 			}
 			if(sj.getJuego().getIndice() ==Integer.valueOf(comando[1])) {
 				sj.getJuego().girarPieza(Integer.valueOf(comando[1]));	 
-				enviarMensaje("girar" + "!" + Integer.valueOf(comando[1]), Mundo.app.getSv().getClientes().get(1).getIp(), Mundo.app.getSv().getClientes().get(1).getPuerto());
 			}else {
 				sj.getJuego2().girarPieza(Integer.valueOf(comando[1]) );	 
-				enviarMensaje("girar" + "!" + Integer.valueOf(comando[1]), Mundo.app.getSv().getClientes().get(0).getIp(), Mundo.app.getSv().getClientes().get(0).getPuerto());
 			}
 		}
 		if(comando[0].equals("mover")) {
@@ -112,11 +108,9 @@ public class HiloServidor extends Thread{
 				System.out.println("error");
 			}
 			if(sj.getJuego().getIndice() ==Integer.valueOf(comando[2])) {
-				sj.getJuego().moverPieza(Integer.valueOf(comando[1]));	 
-				enviarMensaje("mover" + "!" + Integer.valueOf(comando[2]), Mundo.app.getSv().getClientes().get(1).getIp(), Mundo.app.getSv().getClientes().get(1).getPuerto());
+				sj.getJuego().moverPieza(Integer.valueOf(comando[1]), Integer.valueOf(comando[2]));	 
 			}else {
-				sj.getJuego2().moverPieza(Integer.valueOf(comando[1]));	 
-				enviarMensaje("mover" + "!" + Integer.valueOf(comando[2]), Mundo.app.getSv().getClientes().get(0).getIp(), Mundo.app.getSv().getClientes().get(0).getPuerto());
+				sj.getJuego2().moverPieza(Integer.valueOf(comando[1]),Integer.valueOf(comando[2]));	 
 			}
 		}
 

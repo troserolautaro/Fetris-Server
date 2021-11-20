@@ -56,32 +56,9 @@ public class Mapa {
 	public ArrayList<Cuadrado> getCuadrados() {
 		return cuadrados;
 	}
-	public void borrarLinea(int y) {
-		ArrayList<Cuadrado> tmpBorrar = new ArrayList <Cuadrado>();
-		for (int j = 0; j < cuadrados.size(); j++) {
-				if(y==cuadrados.get(j).getYGrilla(spr.getY())) {
-					grilla[y][cuadrados.get(j).getXGrilla(spr.getX())]=false;
-					tmpBorrar.add(cuadrados.get(j));
-				}
-		}
-		for (int i = 0; i < tmpBorrar.size(); i++) {
-			int j=0;
-			boolean bandera=false;
-			do {
-				if(tmpBorrar.get(i)==cuadrados.get(j)) {
-					cuadrados.remove(cuadrados.get(j));
-					bandera=false;
-				}
-				j++;
-			}while(j<cuadrados.size() && !bandera);
-		}
-		tmpBorrar.removeAll(tmpBorrar);
-		
-	}
 	
-	public void bajarCuadrados() {
+	public void bajarCuadrados(int indice) {
 		boolean bandera=false;
-		
 		for (int i =grilla.length-1; i > -1; i--) {
 			int tmp=0;
 			for (int j = 0; j < grilla[i].length; j++) {
@@ -97,10 +74,10 @@ public class Mapa {
 						quitarAGrilla(cuadrados.get(j));
 						cuadrados.get(j).getSpr().setY(cuadrados.get(j).getSpr().getY()-(cuadrados.get(j).getMovimiento()));
 						agregarAGrilla(cuadrados.get(j));
-
+						
 					}
 				}
-			
+				Mundo.app.getSv().getHs().enviarMensajeGeneral("bajarlinea"+ "!" + i + "!" + indice );
 			}
 		}
 	

@@ -24,16 +24,6 @@ public class Pieza {
 		crearTetromino(text,tamaño,x,y,indice, textind);
 	}
 	
-	public Pieza(Texture text, int tamaño, float x, float y,int filaY,int filaX, boolean[][] piezaRotada, float correcionX, float correcionY) {
-		this.text=text;
-		this.tamaño=tamaño;
-		this.x=x;
-		this.y=y;
-		this.filaX=filaX;
-		this.filaY=filaY;
-		girarTetromino(piezaRotada,correcionX,correcionY);
-	}
-	
 	public void crearTetromino(Texture text, int tamaño, float x, float y, int indice, int textind) {
 		int pieza = buscarPieza();
 		for (int i = 0; i <tetromino.length; i++) {

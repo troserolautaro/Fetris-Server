@@ -1,6 +1,8 @@
 package com.proyecto.juego;
 
 
+import java.util.ArrayList;
+
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
@@ -69,7 +71,7 @@ public class Juego implements JuegoEventListener{
 		tiempoMov+=Gdx.graphics.getDeltaTime();
 		if(tiempoMov>intervaloCaida) {
 			bajarPieza();
-			Mundo.app.getSv().getHs().enviarMensajeGeneral("bajar"+ "!" + indice);
+			
 			tiempoMov=0;
 			}
 		
@@ -88,7 +90,7 @@ public class Juego implements JuegoEventListener{
 		if(posYAux <= mapa.getSpr().getY() ) {
 				moverse=false;
 		}else if(mapa.getCuadrados().size()>0){
-					if(colisionCuadrado(c,c.getSpr().getX(),posYAux)) { //Si devuelve falso no colisiona, por ende puede moverse
+				if(colisionCuadrado(c,c.getSpr().getX(),posYAux)) { //Si devuelve falso no colisiona, por ende puede moverse
 						moverse=false;
 					}
 				
@@ -101,9 +103,11 @@ public class Juego implements JuegoEventListener{
 				mapa.getCuadrados().add(p.getTetromino()[j]);
 				mapa.agregarAGrilla(p.getTetromino()[j]);	
 			}
+			Mundo.app.getSv().getHs().enviarMensajeGeneral("guardar"+ "!" + indice);
 			mapa.ordBurbCuadrados();
 			verifLineaCompl();
 			nueva=true;
+			
 		}
 		
 		return moverse;
@@ -145,7 +149,7 @@ public boolean verifMov(Cuadrado[] t, int dir) { //Verificar colisiones en X de 
 	}
 
 
-public void moverPieza(int dir) {
+public void moverPieza(int dir, int cliente) {
 	Cuadrado[] t = 	p.getTetromino();
 	if(verifMov(t,dir)) {//Si devuelve verdadero puede avanzar
 		for (int i = 0; i <	t.length; i++) {
@@ -153,6 +157,7 @@ public void moverPieza(int dir) {
 			t[i].getSpr().setX(pos);
 		}
 		p.setFilaX(p.getFilaX()+dir);
+		Mundo.app.getSv().getHs().enviarMensajeGeneral("mover" + "!"+ dir +"!" + cliente);
 	}
 	
 }
@@ -176,25 +181,12 @@ public void bajarPieza() {
 			p.getTetromino()[i].getSpr().setY(pos);
 		}
 	p.setFilaY(p.getFilaY()-1);
+	Mundo.app.getSv().getHs().enviarMensajeGeneral("bajar"+ "!" + p.getFilaY() + "!" + indice);
 	}
 }
 @Override
 public void keyDown(int keycode) {
-	if(io.isUp()) {
-	}
-	if(io.isDown()) {
-		bajarPieza();
-	}
-	if(io.isRight()) {
-		moverPieza(1);
-	}
-	if(io.isLeft()) {
-		moverPieza(-1);
-	}
-	if(io.isSpace()) {
-		//Verificar cual de los sprites es el mas alto en todos los X del mismo sprite, y luego ajustar el sprite que esta en el mismo X y ajustar los otros Sprites.
-		
-	}
+	
 }
 private boolean colisionRotacion(boolean[][] nuevaPieza) {
 		boolean girar=true;
@@ -238,7 +230,7 @@ private boolean colisionRotacion(boolean[][] nuevaPieza) {
 			
 	
 	
-	public void girarPieza(int indice) { //Odio este codigo
+	public void girarPieza(int cliente) { //Odio este codigo
 		boolean[][] new_piece = new boolean[p.getTipo().length][p.getTipo()[0].length];
 		for(int i = 0; i < p.getTipo().length; i++){
 			for(int j = 0; j < p.getTipo()[i].length; j++){
@@ -246,8 +238,9 @@ private boolean colisionRotacion(boolean[][] nuevaPieza) {
 			}
 		}
 		if(colisionRotacion(new_piece)) {
-			p= new Pieza(p.getText(), p.getTamaño(), p.getX(), p.getY(),p.getFilaY(),p.getFilaX(), new_piece, mapa.getSpr().getX()+ p.getTamaño(), mapa.getSpr().getY()+p.getTamaño());
-				}
+			p.girarTetromino(new_piece, mapa.getSpr().getX()+ p.getTamaño(), mapa.getSpr().getY()+p.getTamaño());
+			Mundo.app.getSv().getHs().enviarMensajeGeneral("girar" + "!"+ "pieza" +"!" + cliente);
+		}
 		
 		}
 		
@@ -281,12 +274,12 @@ private boolean colisionRotacion(boolean[][] nuevaPieza) {
 				}
 			}
 			if(tmp==mapa.getGrilla()[i].length) {
-				mapa.borrarLinea(i);  
+				borrarLinea(i);  
 				lineas++;
 			}
 		}
 		if(lineas>0) {
-			mapa.bajarCuadrados();
+			mapa.bajarCuadrados(indice);
 			enviarLineas(lineas);
 		}
 		}
@@ -306,11 +299,13 @@ private boolean colisionRotacion(boolean[][] nuevaPieza) {
 	@Override
 	public void recibirLineas(int lineas) {
 			int bloqueBorrado = Utiles.r.nextInt(mapa.getGrilla()[0].length );
+			Mundo.app.getSv().getHs().enviarMensajeGeneral("enviar"+ "!" +lineas + "!" +bloqueBorrado + "!" + indice);
 			for (int i = 0; i < lineas; i++) {
 				mapa.masAltoMasBajo();
 				mapa.subirCuadrados(0);
 				añadirLinea(0, bloqueBorrado);
 			}
+			
 	}
 	
 	private void añadirLinea(int y, int bloqueBorrado) {
@@ -323,6 +318,28 @@ private boolean colisionRotacion(boolean[][] nuevaPieza) {
 		for (int i = 0; i < mapa.getCuadrados().size(); i++) {
 			mapa.agregarAGrilla(mapa.getCuadrados().get(i));
 		}
+	}
+	public void borrarLinea(int y) {
+		ArrayList<Cuadrado> tmpBorrar = new ArrayList <Cuadrado>();
+		for (int j = 0; j < mapa.getCuadrados().size(); j++) {
+				if(y==mapa.getCuadrados().get(j).getYGrilla(mapa.getSpr().getY())) {
+					mapa.getGrilla()[y][mapa.getCuadrados().get(j).getXGrilla(mapa.getSpr().getX())]=false;
+					tmpBorrar.add(mapa.getCuadrados().get(j));
+				}
+		}
+		for (int i = 0; i < tmpBorrar.size(); i++) {
+			int j=0;
+			boolean bandera=false;
+			do {
+				if(tmpBorrar.get(i)==mapa.getCuadrados().get(j)) {
+					mapa.getCuadrados().remove(mapa.getCuadrados().get(j));
+					bandera=false;
+				}
+				j++;
+			}while(j<mapa.getCuadrados().size() && !bandera);
+		}
+		tmpBorrar.removeAll(tmpBorrar);	
+		Mundo.app.getSv().getHs().enviarMensajeGeneral("borrar" + "!" + y + "!" +  indice);
 	}
 
 	public int getIndice() {
