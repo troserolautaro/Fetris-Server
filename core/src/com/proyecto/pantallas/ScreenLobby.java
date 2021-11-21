@@ -17,16 +17,23 @@ public class ScreenLobby implements Screen {
 	public void show() {
 		iniciarCam();
 		spr= new Sprite(new Texture("Tetriminos\\Title\\Title_No_BG.png"));
-		spr.setBounds(Config.ANCHO/2-350, Config.ALTO/1.5f,700, 100);
+		spr.setBounds(Config.ANCHO/2-250, Config.ALTO/2f+100,500, 100);
 	}
 
 	@Override
 	public void render(float delta) {
+		update();
 		Gdx.gl.glClearColor(0, 0, 0, 0);
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+		
 		Mundo.batch.begin();
 		spr.draw(Mundo.batch);
 		Mundo.batch.end();
+	}
+
+	private void update() {
+		Mundo.batch.setProjectionMatrix(cam.combined);
+		cam.update();		
 	}
 
 	@Override
@@ -59,7 +66,7 @@ public class ScreenLobby implements Screen {
 	}
 	private  void iniciarCam() {
 		cam= new OrthographicCamera();
-		cam.setToOrtho(false, Config.ANCHO/ 2, Config.ALTO / 2);
+		cam.setToOrtho(false, Config.ANCHO, Config.ALTO );
 		cam.zoom=1f;
 	cam.update();
 }

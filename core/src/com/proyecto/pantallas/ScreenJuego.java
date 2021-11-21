@@ -27,8 +27,7 @@ private boolean creado=false;
 		if(creado) {
 			Gdx.gl.glClearColor(0, 0, 0, 0);
 			Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-			juego.update(cam, delta);
-			juego2.update(cam, delta);
+			update(delta);
 			juego.render();
 			juego2.render();	
 		}
@@ -69,6 +68,14 @@ private boolean creado=false;
 	
 //	}
 
+	private void update(float delta) {
+		Mundo.batch.setProjectionMatrix(cam.combined);
+		cam.update();
+		juego.update(delta);
+		juego2.update(delta);
+	}
+
+
 	@Override
 	public void resize(int width, int height) {
 		// TODO Auto-generated method stub
@@ -102,6 +109,7 @@ private boolean creado=false;
 		cam= new OrthographicCamera();
 		cam.setToOrtho(false, Config.ANCHO/ 2, Config.ALTO / 2);
 		cam.zoom=1f;
+		
 		cam.update();
 	}
 	

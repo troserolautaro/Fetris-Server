@@ -117,7 +117,10 @@ public void masAltoMasBajo(){
 			if(cuadrados.get(i).getYGrilla(spr.getY())>=y) {
 				quitarAGrilla(cuadrados.get(i));
 				cuadrados.get(i).getSpr().setY(cuadrados.get(i).getSpr().getY()+cuadrados.get(i).getMovimiento());
-				agregarAGrilla(cuadrados.get(i));
+				if(cuadrados.get(i).getYGrilla(spr.getY())<grilla.length) {
+					agregarAGrilla(cuadrados.get(i));
+				}
+				
 			}
 		}
 

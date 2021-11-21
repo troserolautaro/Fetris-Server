@@ -11,9 +11,11 @@ import com.proyecto.utiles.Mundo;
 public class FetrisServer extends Game {
 	private Servidor sv;
 	private boolean cambio;
-	public void setCambio(boolean cambio) {
-		this.cambio = cambio;
-	}
+	private ScreenJuego sj;
+	private ScreenLobby sl;
+//	private ScreenFin sf;
+	private boolean fin=false;
+	private boolean lobby = false;
 
 	@Override
 	public void create () {
@@ -23,8 +25,10 @@ public class FetrisServer extends Game {
 		
 		Mundo.app = this;
 		Mundo.batch= new SpriteBatch();
+		
 		sv = new Servidor();
 		this.setScreen(new ScreenLobby());
+		
 	}
 
 	@Override
@@ -33,8 +37,13 @@ public class FetrisServer extends Game {
 		if(cambio) {
 			cambiar();
 		}
+//		if(fin) {
+//			fin();
+//		}
+		if(lobby) {
+			lobby();
+		}
 	}
-	
 	@Override
 	public void dispose () {
 		Mundo.batch.dispose();
@@ -44,9 +53,35 @@ public class FetrisServer extends Game {
 		return sv;
 	}
 	
-	public void cambiar() {
-		this.screen.dispose();
-		this.setScreen(new ScreenJuego());
+	private void cambiar() {
+		screen.dispose();
+		this.setScreen(sj = new ScreenJuego());
 		cambio=!cambio;
+		super.render();
+	}
+	public void setLobby(boolean lobby) {
+		this.lobby = lobby;
+	}
+
+//	private void fin() {
+//		screen.dispose();
+//		this.setScreen(sf = new ScreenFin(true));
+//		fin=!fin;
+//		super.render();
+//	}
+	private void lobby() {
+		screen.dispose();
+		this.setScreen(sl= new ScreenLobby());
+		lobby=!lobby;
+		super.render();
+	}
+	
+	public void setFin(boolean fin) {
+		this.fin = fin;
+	}
+
+
+	public void setCambio(boolean cambio) {
+		this.cambio = cambio;
 	}
 }

@@ -58,7 +58,7 @@ public class HiloServidor extends Thread{
 			if(comando[0].equals("Conexion")) {
 				Mundo.app.getSv().getClientes().add(new Cliente(dp.getAddress(), dp.getPort()));
 				enviarMensaje("OK"+ "!" + Mundo.app.getSv().getClientes().size(), dp.getAddress(), dp.getPort());
-				
+				System.out.println(Mundo.app.getSv().getClientes().size());
 				if(Mundo.app.getSv().getClientes().size()==2) {
 					Mundo.app.setCambio(true);				
 				}
@@ -110,6 +110,10 @@ public class HiloServidor extends Thread{
 
 	}
 	
+
+	public void setCreados(int creados) {
+		this.creados = creados;
+	}
 
 	public void enviarMensajeGeneral(String msj) {
 			for(int i = 0; i < Mundo.app.getSv().getClientes().size(); i++) {
