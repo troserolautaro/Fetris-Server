@@ -94,13 +94,14 @@ private boolean creado=false;
 
 	@Override
 	public void dispose() {
-		// TODO Auto-generated method stub
-		
+		juego.dispose();
+		juego2.dispose();
+	
 	}
 	private  void iniciarCam() {
-			cam= new OrthographicCamera();
-			cam.setToOrtho(false, Config.ANCHO/ 2, Config.ALTO / 2);
-			cam.zoom=1f;
+		cam= new OrthographicCamera();
+		cam.setToOrtho(false, Config.ANCHO/ 2, Config.ALTO / 2);
+		cam.zoom=1f;
 		cam.update();
 	}
 	

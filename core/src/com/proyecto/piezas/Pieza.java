@@ -26,6 +26,7 @@ public class Pieza {
 	
 	public void crearTetromino(Texture text, int tamaño, float x, float y, int indice, int textind) {
 		int pieza = buscarPieza();
+		Mundo.app.getSv().getHs().enviarMensajeGeneral("crearPieza" + "!" + textind + "!" + pieza + "!" + indice);
 		for (int i = 0; i <tetromino.length; i++) {
 			int j=0;
 			boolean bandera=false;
@@ -42,7 +43,6 @@ public class Pieza {
 				j++;
 			}while(j<tipoTmp.length && !bandera);
 		}
-		Mundo.app.getSv().getHs().enviarMensajeGeneral("crearPieza" + "!" + textind + "!" + pieza + "!" + indice);
 		//Termina crearse la pieza
 	}
 	
@@ -75,7 +75,10 @@ public class Pieza {
 				int k=0;
 				do {
 					if(tipoTmp[j][k]) {
-						tetromino[i]=(new Cuadrado(this.text, this.tamaño, (filaX+k)*this.tamaño+ correcionX, (filaY-j)*this.tamaño+correcionY));
+//						tetromino[i]=(new Cuadrado(this.text, this.tamaño, (filaX+k)*this.tamaño+ correcionX, (filaY-j)*this.tamaño+correcionY));
+						tetromino[i].getSpr().setX((filaX+k) * this.tamaño+ correcionX);
+						tetromino[i].getSpr().setY((filaY-j)*this.tamaño+correcionY);
+						
 						tipoTmp[j][k]=false;
 						bandera=true;
 					}
@@ -145,6 +148,11 @@ public class Pieza {
 	}
 	public Cuadrado[] getTetromino() {
 		return tetromino;
+	}
+
+	public void dispose() {
+		text.dispose();
+		
 	}
 	}
 

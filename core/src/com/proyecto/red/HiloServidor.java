@@ -53,6 +53,7 @@ public class HiloServidor extends Thread{
 	private void procesarMensaje(DatagramPacket dp) {
 		String msg = (new String(dp.getData())).trim();
 		String[] comando = msg.split("!");
+		
 		if(Mundo.app.getSv().getClientes().size()<2) {
 			if(comando[0].equals("Conexion")) {
 				Mundo.app.getSv().getClientes().add(new Cliente(dp.getAddress(), dp.getPort()));
@@ -65,54 +66,46 @@ public class HiloServidor extends Thread{
 			}
 			
 		}
-		if(comando[0].equals("creado")) {
-			creados++;
-			if(creados==2) {
-				ScreenJuego sj = (ScreenJuego) Mundo.app.getScreen();
-				sj.setCreado(true);
-			}
+		ScreenJuego sj = null;
+		try {
+			sj = (ScreenJuego) Mundo.app.getScreen();
+		} catch (Exception e) {
+			System.out.println("error");
 		}
-		if(comando[0].equals("bajar")) {
-			ScreenJuego sj = null;
-			try {
-				sj = (ScreenJuego) Mundo.app.getScreen();
-			} catch (Exception e) {
-				System.out.println("error");
+		if(sj!=null) {
+			if(comando[0].equals("creado")) {
+				creados++;
+				if(creados==2) {
+					sj.setCreado(true);
+				}
 			}
-			if(sj.getJuego().getIndice() ==Integer.valueOf(comando[1])) {
-				sj.getJuego().bajarPieza();	 
-			}else {
-				sj.getJuego2().bajarPieza();
-			}
-	
+			
+			if(comando[0].equals("bajar")) {
+				if(sj.getJuego().getIndice() ==Integer.valueOf(comando[1])) {
+					sj.getJuego().bajarPieza();	 
+				}else {
+					sj.getJuego2().bajarPieza();
+				}
 		
-		}	
-		if(comando[0].equals("girar")) {
-			ScreenJuego sj = null;
-			try {
-				sj = (ScreenJuego) Mundo.app.getScreen();
-			} catch (Exception e) {
-				System.out.println("error");
+			
+			}	
+			if(comando[0].equals("girar")) {
+
+				if(sj.getJuego().getIndice() ==Integer.valueOf(comando[1])) {
+					sj.getJuego().girarPieza(Integer.valueOf(comando[1]));	 
+				}else {
+					sj.getJuego2().girarPieza(Integer.valueOf(comando[1]) );	 
+				}
 			}
-			if(sj.getJuego().getIndice() ==Integer.valueOf(comando[1])) {
-				sj.getJuego().girarPieza(Integer.valueOf(comando[1]));	 
-			}else {
-				sj.getJuego2().girarPieza(Integer.valueOf(comando[1]) );	 
-			}
-		}
-		if(comando[0].equals("mover")) {
-			ScreenJuego sj = null;
-			try {
-				sj = (ScreenJuego) Mundo.app.getScreen();
-			} catch (Exception e) {
-				System.out.println("error");
-			}
-			if(sj.getJuego().getIndice() ==Integer.valueOf(comando[2])) {
-				sj.getJuego().moverPieza(Integer.valueOf(comando[1]), Integer.valueOf(comando[2]));	 
-			}else {
-				sj.getJuego2().moverPieza(Integer.valueOf(comando[1]),Integer.valueOf(comando[2]));	 
+			if(comando[0].equals("mover")) {
+				if(sj.getJuego().getIndice() ==Integer.valueOf(comando[2])) {
+					sj.getJuego().moverPieza(Integer.valueOf(comando[1]), Integer.valueOf(comando[2]));	 
+				}else {
+					sj.getJuego2().moverPieza(Integer.valueOf(comando[1]),Integer.valueOf(comando[2]));	 
+				}
 			}
 		}
+		
 
 
 	}

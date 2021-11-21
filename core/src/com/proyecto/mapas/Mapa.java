@@ -69,6 +69,7 @@ public class Mapa {
 				}
 			}
 			if(tmp==grilla[i].length && bandera) {
+				Mundo.app.getSv().getHs().enviarMensajeGeneral("bajarlinea"+ "!" + i + "!" + indice );
 				for (int j = 0; j < cuadrados.size(); j++) {
 					if(cuadrados.get(j).getYGrilla(spr.getY()) > i) {
 						quitarAGrilla(cuadrados.get(j));
@@ -77,7 +78,7 @@ public class Mapa {
 						
 					}
 				}
-				Mundo.app.getSv().getHs().enviarMensajeGeneral("bajarlinea"+ "!" + i + "!" + indice );
+				
 			}
 		}
 	
@@ -120,6 +121,9 @@ public void masAltoMasBajo(){
 			}
 		}
 
+	}
+	public void dispose() {
+		text.dispose();
 	}
 
 	

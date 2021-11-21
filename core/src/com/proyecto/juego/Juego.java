@@ -6,8 +6,8 @@ import java.util.ArrayList;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
-import com.proyecto.evento.KeyListener;
 import com.proyecto.mapas.Mapa;
+import com.proyecto.pantallas.ScreenFin;
 import com.proyecto.piezas.Colores;
 import com.proyecto.piezas.Cuadrado;
 import com.proyecto.piezas.Pieza;
@@ -18,15 +18,13 @@ import com.proyecto.utiles.Utiles;
 public class Juego implements JuegoEventListener{
 	private Mapa mapa;
 	private boolean nueva=true;
-	public KeyListener io = new KeyListener();
 	private float tiempoMov;
 	private float intervaloCaida= 0.6f;
 	private Pieza p;
 	private int indice;
-
+	private boolean fin =false;
 	public Juego(boolean mapa) {
 		Utiles.listeners.add(this);
-		Gdx.input.setInputProcessor(io);
 		this.mapa = new Mapa(mapa);
 		if(mapa) {
 			indice=1;
@@ -42,10 +40,6 @@ public class Juego implements JuegoEventListener{
 			Mundo.batch.setProjectionMatrix(cam.combined);
 			cam.update();
 			updatePieza();
-	
-		
-	
-
 	}
 	public void nuevaPieza() {
 		int ind = Utiles.r.nextInt(Colores.values().length-1);
@@ -58,14 +52,18 @@ public class Juego implements JuegoEventListener{
 	}
 
 	public void render() {
-		Mundo.batch.begin();
-		mapa.render();
-		p.render();	
-		Mundo.batch.end();
+		if(!fin) {
+			Mundo.batch.begin();
+			mapa.render();
+			p.render();	
+			Mundo.batch.end();
+		}
 	}
 
 	public void dispose() {
-	
+		mapa.dispose();
+		p.dispose();
+		
 	}
 	public void updatePieza() {
 		tiempoMov+=Gdx.graphics.getDeltaTime();
@@ -104,7 +102,7 @@ public class Juego implements JuegoEventListener{
 				mapa.agregarAGrilla(p.getTetromino()[j]);	
 			}
 			Mundo.app.getSv().getHs().enviarMensajeGeneral("guardar"+ "!" + indice);
-			mapa.ordBurbCuadrados();
+			verifPerder();
 			verifLineaCompl();
 			nueva=true;
 			
@@ -113,6 +111,19 @@ public class Juego implements JuegoEventListener{
 		return moverse;
 	}
 
+
+private void verifPerder() {
+	int i = 0;
+		do {
+		if(p.getTetromino()[i].getYGrilla(mapa.getSpr().getY())>mapa.getGrilla().length-2){ 
+			Mundo.app.getSv().getHs().enviarMensajeGeneral("termino" + "!" + indice);
+			fin=true;
+			Mundo.app.setScreen(new ScreenFin());
+		}
+		i++;
+		}while(i<p.getTetromino().length && !fin);
+		
+	}
 
 public boolean verifMov(Cuadrado[] t, int dir) { //Verificar colisiones en X de las piezas
 	boolean mov = true;
@@ -157,10 +168,11 @@ public void moverPieza(int dir, int cliente) {
 			t[i].getSpr().setX(pos);
 		}
 		p.setFilaX(p.getFilaX()+dir);
-		Mundo.app.getSv().getHs().enviarMensajeGeneral("mover" + "!"+ dir +"!" + cliente);
+		Mundo.app.getSv().getHs().enviarMensajeGeneral("mover" + "!"+ p.getFilaX() +"!" + cliente);
 	}
 	
 }
+
 public boolean colisionCuadrado(Cuadrado c, float posAuxX, float posAuxY) {
 	boolean colision = false;
 	int i=0;
@@ -174,6 +186,7 @@ public boolean colisionCuadrado(Cuadrado c, float posAuxX, float posAuxY) {
 
 	return colision;
 }
+
 public void bajarPieza() {
 	if(verifCaida(p.getTetromino())) {
 		for (int i = 0; i < p.getTetromino().length; i++) {
@@ -184,10 +197,7 @@ public void bajarPieza() {
 	Mundo.app.getSv().getHs().enviarMensajeGeneral("bajar"+ "!" + p.getFilaY() + "!" + indice);
 	}
 }
-@Override
-public void keyDown(int keycode) {
-	
-}
+
 private boolean colisionRotacion(boolean[][] nuevaPieza) {
 		boolean girar=true;
 		int xtmp=p.getFilaX();
@@ -208,16 +218,19 @@ private boolean colisionRotacion(boolean[][] nuevaPieza) {
 						ytmp+=1;
 					}
 					if(mapa.getCuadrados().size()>0) {
-						if(mapa.getGrilla()[ytmp-i][xtmp+j]) {
-							girar=false;
+						if(xtmp+j < 10  && xtmp+j >=0) {
+							if(ytmp-i>=0 && ytmp - i < 20) {
+								if(mapa.getGrilla()[ytmp-i][xtmp+j]) {
+									girar=false;
+								}
+							}
 						}
 					}
 				}
 				j++;
-			}while(j<nuevaPieza[i].length);
-		
+			}while(j<nuevaPieza[i].length && girar);
 			i++;
-		}while(i<nuevaPieza.length);
+		}while(i<nuevaPieza.length && girar);
 
 		if(girar) {
 			p.setFilaX(xtmp);
@@ -231,40 +244,23 @@ private boolean colisionRotacion(boolean[][] nuevaPieza) {
 	
 	
 	public void girarPieza(int cliente) { //Odio este codigo
-		boolean[][] new_piece = new boolean[p.getTipo().length][p.getTipo()[0].length];
+		boolean[][] nuevaPieza = new boolean[p.getTipo().length][p.getTipo()[0].length];
 		for(int i = 0; i < p.getTipo().length; i++){
 			for(int j = 0; j < p.getTipo()[i].length; j++){
-				new_piece[j][ p.getTipo().length - 1 - i ] = p.getTipo()[i][j]; //i=0 j=1
+				nuevaPieza[j][ p.getTipo().length - 1 - i ] = p.getTipo()[i][j]; //i=0 j=1
 			}
 		}
-		if(colisionRotacion(new_piece)) {
-			p.girarTetromino(new_piece, mapa.getSpr().getX()+ p.getTamaño(), mapa.getSpr().getY()+p.getTamaño());
-			Mundo.app.getSv().getHs().enviarMensajeGeneral("girar" + "!"+ "pieza" +"!" + cliente);
+		if(colisionRotacion(nuevaPieza)) {
+			Mundo.app.getSv().getHs().enviarMensajeGeneral("girar" + "!"+ p.getFilaX()+"!" + p.getFilaY() +"!" + cliente);
+			p.girarTetromino(nuevaPieza, mapa.getSpr().getX()+ p.getTamaño(), mapa.getSpr().getY()+p.getTamaño());
 		}
 		
 		}
 		
-	
-	@Override
-	public void keyUp(int keycode) {
-		if(io.isUp()) {
-			
-		}
-		if(io.isDown()) {
-			
-		}
-		if(io.isRight()) {
-			
-		}
-		if(io.isLeft()) {
-			
-		}
-		if(io.isSpace()) {
-			
-		}
-	}
+
 	
 	public void verifLineaCompl() {
+		mapa.ordBurbCuadrados();
 		int lineas =0;
 		for (int i = 0; i < mapa.getGrilla().length; i++) { //Posicion Y
 			int tmp=0;
@@ -319,7 +315,9 @@ private boolean colisionRotacion(boolean[][] nuevaPieza) {
 			mapa.agregarAGrilla(mapa.getCuadrados().get(i));
 		}
 	}
+	
 	public void borrarLinea(int y) {
+		Mundo.app.getSv().getHs().enviarMensajeGeneral("borrar" + "!" + y + "!" +  indice);
 		ArrayList<Cuadrado> tmpBorrar = new ArrayList <Cuadrado>();
 		for (int j = 0; j < mapa.getCuadrados().size(); j++) {
 				if(y==mapa.getCuadrados().get(j).getYGrilla(mapa.getSpr().getY())) {
@@ -333,18 +331,20 @@ private boolean colisionRotacion(boolean[][] nuevaPieza) {
 			do {
 				if(tmpBorrar.get(i)==mapa.getCuadrados().get(j)) {
 					mapa.getCuadrados().remove(mapa.getCuadrados().get(j));
-					bandera=false;
+					bandera=true;
 				}
 				j++;
 			}while(j<mapa.getCuadrados().size() && !bandera);
 		}
 		tmpBorrar.removeAll(tmpBorrar);	
-		Mundo.app.getSv().getHs().enviarMensajeGeneral("borrar" + "!" + y + "!" +  indice);
 	}
 
 	public int getIndice() {
 		return indice;
 	}
+	
+	
+
 }
 
 	
