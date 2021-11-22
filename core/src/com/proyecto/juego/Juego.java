@@ -32,6 +32,7 @@ public class Juego implements JuegoEventListener{
 		}else {
 			indice=2;
 		}
+		this.mapa.mirarGrilla();
 	}
 	
 	
@@ -152,11 +153,12 @@ public class Juego implements JuegoEventListener{
 			do {
 			if(p.getTetromino()[i].getYGrilla(mapa.getSpr().getY())>mapa.getGrilla().length-3){ 
 				Mundo.app.getSv().getHs().enviarMensajeGeneral("termino" + "!" + indice);
-				Mundo.app.getSv().getHs().setCreados(0);
 				fin=true;
-				
+				Mundo.app.getSv().getHs().setCreados(0);
+				Utiles.listeners.removeAll(Utiles.listeners);
 				Mundo.app.getSv().getClientes().removeAll(Mundo.app.getSv().getClientes());
 				Mundo.app.setLobby(fin);
+				
 			}
 			i++;
 			}while(i<p.getTetromino().length && !fin);
@@ -313,7 +315,9 @@ public class Juego implements JuegoEventListener{
 			}
 		}
 		if(lineas>0) {
-			mapa.bajarCuadrados(indice);
+			if(mapa.getCuadrados().size()>0) {
+				mapa.bajarCuadrados(indice);
+			}
 			enviarLineas(lineas);
 		}
 	}
