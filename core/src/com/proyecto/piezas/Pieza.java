@@ -5,6 +5,10 @@ import com.proyecto.utiles.Mundo;
 import com.proyecto.utiles.Utiles;
 
 public class Pieza {
+	public int getPieza() {
+		return pieza;
+	}
+
 	private Cuadrado[] tetromino= new Cuadrado[4];
 	private boolean[][] tipoTmp;
 	private boolean[][]	tipo;
@@ -13,20 +17,54 @@ public class Pieza {
 	private float x,y;
 	private int filaX;
 	private int filaY;
-	
-	public Pieza(Texture text, int tamaño, float x, float y, int filaY, int filaX, int indice, int textind) {
+	private int pieza;
+	private int ind;
+	public Pieza(Texture text, int tamaño, float x, float y, int filaY, int filaX, int ind) {
 		this.text=text;
 		this.tamaño=tamaño;
 		this.x=x;
 		this.y=y;
 		this.filaX=filaX;
 		this.filaY=filaY;
-		crearTetromino(text,tamaño,x,y,indice, textind);
+		this.ind = ind;
+		crearTetromino();
 	}
 	
-	public void crearTetromino(Texture text, int tamaño, float x, float y, int indice, int textind) {
-		int pieza = buscarPieza();
-		Mundo.app.getSv().getHs().enviarMensajeGeneral("crearPieza" + "!" + textind + "!" + pieza + "!" + indice);
+	public Pieza(Texture text, int tamaño, float x, float y, int filaY, int filaX, int ind, int pieza) {
+		this.text=text;
+		this.tamaño=tamaño;
+		this.x=x;
+		this.y=y;
+		this.filaX=filaX;
+		this.filaY=filaY;
+		this.ind = ind;
+		this.pieza = pieza;
+		crearTetromino(pieza);
+	}
+
+	private void crearTetromino(int pieza) {
+		asignarPieza();
+		for (int i = 0; i <tetromino.length; i++) {
+			int j=0;
+			boolean bandera=false;
+			do {
+				int k=0;
+				do {
+					if(tipoTmp[j][k]) {
+						tetromino[i]=(new Cuadrado(text, tamaño, x+((k-1)*tamaño), y-(j*tamaño)));
+						tipoTmp[j][k]=false;
+						bandera=true;
+					}
+					k++;
+				}while(k<tipoTmp[j].length && !bandera);
+				j++;
+			}while(j<tipoTmp.length && !bandera);
+		}
+		
+	}
+
+	public void crearTetromino(	) {
+		pieza = buscarPieza();
 		for (int i = 0; i <tetromino.length; i++) {
 			int j=0;
 			boolean bandera=false;
@@ -89,6 +127,7 @@ public class Pieza {
 		}
 		
 	}
+	
 	public int getFilaX() {
 		return filaX;
 	}
@@ -106,6 +145,7 @@ public class Pieza {
 		clonarArray(tmp,tipo);
 		return ind;
 	}
+	
 	private void asignarPieza(boolean[][] piezaRotada) {
 		boolean[][] tmp = piezaRotada;
 		tipoTmp = new boolean [tmp.length][tmp[0].length];
@@ -113,6 +153,15 @@ public class Pieza {
 		clonarArray(tmp,tipoTmp);
 		clonarArray(tmp,tipo);
 	}
+	
+	private void asignarPieza() {
+		boolean[][] tmp = Piezas.values()[pieza].getPieza();;
+		tipoTmp = new boolean [tmp.length][tmp[0].length];
+		tipo = new boolean [tmp.length][tmp[0].length];
+		clonarArray(tmp,tipoTmp);
+		clonarArray(tmp,tipo);
+	}
+	
 	private void clonarArray(boolean[][] tmp, boolean[][] ttmp) {
 		for (int i = 0; i < tmp.length; i++) {
 			for (int j = 0; j < tmp[i].length; j++) {
@@ -131,6 +180,7 @@ public class Pieza {
 			this.tetromino[i].getSpr().draw(Mundo.batch);
 		}
 	}
+	
 	public void setX(float x) {
 		this.x = x;
 	}
@@ -153,6 +203,10 @@ public class Pieza {
 	public void dispose() {
 		text.dispose();
 		
+	}
+
+	public int getInd() {
+		return ind;
 	}
 	}
 

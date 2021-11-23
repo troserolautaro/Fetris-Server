@@ -13,18 +13,25 @@ public class ScreenJuego implements Screen {
  private Juego juego2;
  private OrthographicCamera cam;
 private boolean creado=false;
+private boolean primer=true;
 	@Override
 	public void show() {
 		Mundo.app.getSv().getHs().enviarMensajeGeneral("Empieza");
 		iniciarCam();
 		juego= new Juego(true);
 		juego2= new Juego(false);
+		
 	}
 
 
 	@Override
 	public void render(float delta) {
 		if(creado) {
+			if(primer) {
+				juego.nuevaPieza();
+				juego2.nuevaPieza();
+				primer=!primer;
+			}
 			Gdx.gl.glClearColor(0, 0, 0, 0);
 			Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 			update(delta);

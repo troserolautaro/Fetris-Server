@@ -53,12 +53,12 @@ public class HiloServidor extends Thread{
 	private void procesarMensaje(DatagramPacket dp) {
 		String msg = (new String(dp.getData())).trim();
 		String[] comando = msg.split("!");
-		
+		int cliente = comando.length-1;
 		if(Mundo.app.getSv().getClientes().size()<2) {
 			if(comando[0].equals("Conexion")) {
 				Mundo.app.getSv().getClientes().add(new Cliente(dp.getAddress(), dp.getPort()));
 				enviarMensaje("OK"+ "!" + Mundo.app.getSv().getClientes().size(), dp.getAddress(), dp.getPort());
-				System.out.println(Mundo.app.getSv().getClientes().size());
+				
 				if(Mundo.app.getSv().getClientes().size()==2) {
 					Mundo.app.setCambio(true);				
 				}
@@ -81,7 +81,7 @@ public class HiloServidor extends Thread{
 			}
 			
 			if(comando[0].equals("bajar")) {
-				if(sj.getJuego().getIndice() ==Integer.valueOf(comando[1])) {
+				if(sj.getJuego().getIndice() ==Integer.valueOf(comando[cliente])) {
 					sj.getJuego().bajarPieza();	 
 				}else {
 					sj.getJuego2().bajarPieza();
@@ -90,21 +90,28 @@ public class HiloServidor extends Thread{
 			
 			}	
 			if(comando[0].equals("girar")) {
-
-				if(sj.getJuego().getIndice() ==Integer.valueOf(comando[1])) {
-					sj.getJuego().girarPieza(Integer.valueOf(comando[1]));	 
+				if(sj.getJuego().getIndice() ==Integer.valueOf(comando[cliente])) {
+					sj.getJuego().girarPieza();	 
 				}else {
-					sj.getJuego2().girarPieza(Integer.valueOf(comando[1]) );	 
+					sj.getJuego2().girarPieza( );	 
 				}
 			}
 			if(comando[0].equals("mover")) {
-				if(sj.getJuego().getIndice() ==Integer.valueOf(comando[2])) {
+				if(sj.getJuego().getIndice() ==Integer.valueOf(comando[cliente])) {
 					sj.getJuego().moverPieza(Integer.valueOf(comando[1]), Integer.valueOf(comando[2]));	 
 				}else {
 					sj.getJuego2().moverPieza(Integer.valueOf(comando[1]),Integer.valueOf(comando[2]));	 
 				}
 			}
+			if(comando[0].equals("guardarPieza")) {
+				if(sj.getJuego().getIndice() ==Integer.valueOf(comando[cliente])) {
+					sj.getJuego().guardarPieza();	 
+				}else {
+					sj.getJuego2().guardarPieza();	 
+				}
+			}
 		}
+		
 		
 
 

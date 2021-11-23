@@ -20,7 +20,7 @@ public class Mapa {
 		spr = new Sprite(text);
 		this.primer= primer;
 		if(primer) {
-			spr.setBounds(36, Config.ALTO/120, (grilla[0].length+2)*12,(grilla.length+2)*12);
+			spr.setBounds(38, Config.ALTO/120, (grilla[0].length+2)*12,(grilla.length+2)*12);
 		}else {
 			spr.setBounds(Config.ANCHO/3, Config.ALTO/120, (grilla[0].length+2)*12,(grilla.length+2)*12);
 		}

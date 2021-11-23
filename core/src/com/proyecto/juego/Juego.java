@@ -10,6 +10,7 @@ import com.proyecto.piezas.Colores;
 import com.proyecto.piezas.Cuadrado;
 import com.proyecto.piezas.Pieza;
 import com.proyecto.utiles.Assets;
+import com.proyecto.utiles.Config;
 import com.proyecto.utiles.Mundo;
 import com.proyecto.utiles.Utiles;
 
@@ -18,13 +19,13 @@ public class Juego implements JuegoEventListener{
 	private boolean nueva=true;
 	private float tiempoMov;
 	private float intervaloCaida= 0.6f;
-	private Pieza p;
+	private Pieza pieza;
+	private Pieza sigP;
+	private Pieza piezaGuardada;
 	private int indice;
 	private boolean fin =false;
 	
-	
 	public Juego(boolean mapa) {
-		System.out.println(mapa);
 		Utiles.listeners.add(this);
 		this.mapa = new Mapa(mapa);
 		if(mapa) {
@@ -32,12 +33,13 @@ public class Juego implements JuegoEventListener{
 		}else {
 			indice=2;
 		}
-		this.mapa.mirarGrilla();
+		
 	}
 	
 	
 	public void update( float delta) {
 			if(nueva) {
+				sigPieza();
 				nuevaPieza();
 				nueva=!nueva;
 			}
@@ -45,10 +47,25 @@ public class Juego implements JuegoEventListener{
 	}
 	
 	
+	private void sigPieza() {	
+		Mundo.app.getSv().getHs().enviarMensajeGeneral("crearPieza" + "!" + indice);
+		pieza = new Pieza(sigP.getText(),sigP.getTamaño(), mapa.getSpr().getX()+ mapa.getSpr().getWidth()/2,mapa.getSpr().getY()+mapa.getSpr().getHeight() - 24,sigP.getFilaY(),sigP.getFilaX(), sigP.getInd(), sigP.getPieza());
+		
+		//		p= new Pieza(Assets.manager.get(Colores.values()[text].getDir(), Texture.class) ,12,mapa.getSpr().getWidth()/2, mapa.getSpr().getHeight() - 24,19,4, pieza, mapa.getSpr().getX(), mapa.getSpr().getY());
+		
+	}
+	
+
+
 	public void nuevaPieza() {
 		int ind = Utiles.r.nextInt(Colores.values().length-1);
-		p = new Pieza(Assets.manager.get(Colores.values()[ind].getDir(),Texture.class), 12,mapa.getSpr().getX()+ mapa.getSpr().getWidth()/2 , mapa.getSpr().getY()+mapa.getSpr().getHeight() - 24,19,4, indice, ind);
-		
+		if(indice==1) {
+			sigP = new Pieza(Assets.manager.get(Colores.values()[ind].getDir(),Texture.class), 12,Config.ANCHO/4-24 , Config.ALTO/4 + 12 ,19,4,ind);
+		}else {
+			sigP = new Pieza(Assets.manager.get(Colores.values()[ind].getDir(),Texture.class), 12,Config.ANCHO/4+24 , Config.ALTO/4 + 12 ,19,4, ind);
+		}
+		Mundo.app.getSv().getHs().enviarMensajeGeneral("crearSigPieza" + "!" + ind + "!" + sigP.getPieza() + "!" + indice);
+	
 	}
 	
 	
@@ -60,14 +77,18 @@ public class Juego implements JuegoEventListener{
 		if(!fin) {
 			Mundo.batch.begin();
 			mapa.render();
-			p.render();	
+			pieza.render();	
+			sigP.render();
+			if(piezaGuardada!=null) {
+				piezaGuardada.render();
+			}
 			Mundo.batch.end();
 		}
 	}
 
 	public void dispose() {
 		mapa.dispose();
-		p.dispose();
+		pieza.dispose();
 		
 	}
 	
@@ -106,13 +127,13 @@ public class Juego implements JuegoEventListener{
 			if(mapa.getCuadrados().size()>0) {
 				verifPosCuadrados();
 			}
-			for (int j = 0; j < p.getTetromino().length; j++) {
-				mapa.getCuadrados().add(p.getTetromino()[j]);
-				if(p.getTetromino()[j].getYGrilla(mapa.getSpr().getY())<mapa.getGrilla().length) {
-					mapa.agregarAGrilla(p.getTetromino()[j]);
+			for (int j = 0; j < pieza.getTetromino().length; j++) {
+				mapa.getCuadrados().add(pieza.getTetromino()[j]);
+				if(pieza.getTetromino()[j].getYGrilla(mapa.getSpr().getY())<mapa.getGrilla().length) {
+					mapa.agregarAGrilla(pieza.getTetromino()[j]);
 				}
 			}
-			Mundo.app.getSv().getHs().enviarMensajeGeneral("guardar"+ "!" + p.getFilaX()+ "!" +p.getFilaY()+ "!" + indice);
+			Mundo.app.getSv().getHs().enviarMensajeGeneral("guardar"+ "!" + pieza.getFilaX()+ "!" +pieza.getFilaY()+ "!" + indice);
 			verifPerder();
 			verifLineaCompl();
 			nueva=true;
@@ -125,7 +146,7 @@ public class Juego implements JuegoEventListener{
 
 	private void verifPosCuadrados() {
 		ArrayList <Cuadrado> cuadrados = mapa.getCuadrados();
-		Cuadrado[] tetromino = p.getTetromino();
+		Cuadrado[] tetromino = pieza.getTetromino();
 		
 		int corregir = 0;
 		for (int i = 0; i < tetromino.length; i++) {
@@ -141,9 +162,9 @@ public class Juego implements JuegoEventListener{
 		}
 		if(corregir>0) {
 			for (int i = 0; i < tetromino.length; i++) {
-					tetromino[i].getSpr().setY(tetromino[i].getSpr().getY()+ corregir * p.getTamaño());
+					tetromino[i].getSpr().setY(tetromino[i].getSpr().getY()+ corregir * pieza.getTamaño());
 				}
-			p.setFilaY(p.getFilaY()+corregir);
+			pieza.setFilaY(pieza.getFilaY()+corregir);
 		}
 	}
 	
@@ -151,7 +172,7 @@ public class Juego implements JuegoEventListener{
 	private void verifPerder() {
 		int i = 0;
 			do {
-			if(p.getTetromino()[i].getYGrilla(mapa.getSpr().getY())>mapa.getGrilla().length-3){ 
+			if(pieza.getTetromino()[i].getYGrilla(mapa.getSpr().getY())>mapa.getGrilla().length-3){ 
 				Mundo.app.getSv().getHs().enviarMensajeGeneral("termino" + "!" + indice);
 				fin=true;
 				Mundo.app.getSv().getHs().setCreados(0);
@@ -161,7 +182,7 @@ public class Juego implements JuegoEventListener{
 				
 			}
 			i++;
-			}while(i<p.getTetromino().length && !fin);
+			}while(i<pieza.getTetromino().length && !fin);
 			
 	}
 	
@@ -200,14 +221,14 @@ public class Juego implements JuegoEventListener{
 
 
 	public void moverPieza(int dir, int cliente) {
-		Cuadrado[] t = 	p.getTetromino();
+		Cuadrado[] t = 	pieza.getTetromino();
 		if(verifMov(t,dir)) {//Si devuelve verdadero puede avanzar
 			for (int i = 0; i <	t.length; i++) {
 				float pos=t[i].getSpr().getX()+dir*t[i].getTamaño();
 				t[i].getSpr().setX(pos);
 			}
-			p.setFilaX(p.getFilaX()+dir);
-			Mundo.app.getSv().getHs().enviarMensajeGeneral("mover" + "!"+ p.getFilaX() +"!" + cliente);
+			pieza.setFilaX(pieza.getFilaX()+dir);
+			Mundo.app.getSv().getHs().enviarMensajeGeneral("mover" + "!"+ pieza.getFilaX() +"!" + cliente);
 		}
 		
 	}
@@ -228,27 +249,27 @@ public class Juego implements JuegoEventListener{
 	
 	
 	public void bajarPieza() {
-		if(verifCaida(p.getTetromino())) {
-			for (int i = 0; i < p.getTetromino().length; i++) {
-				float pos=p.getTetromino()[i].getSpr().getY()- p.getTetromino()[i].getMovimiento();
-				p.getTetromino()[i].getSpr().setY(pos);
+		if(verifCaida(pieza.getTetromino())) {
+			for (int i = 0; i < pieza.getTetromino().length; i++) {
+				float pos=pieza.getTetromino()[i].getSpr().getY()- pieza.getTetromino()[i].getMovimiento();
+				pieza.getTetromino()[i].getSpr().setY(pos);
 			}
-		p.setFilaY(p.getFilaY()-1);
-		Mundo.app.getSv().getHs().enviarMensajeGeneral("bajar"+ "!" + p.getFilaY()+ "!" +p.getFilaX() + "!" + indice);
+		pieza.setFilaY(pieza.getFilaY()-1);
+		Mundo.app.getSv().getHs().enviarMensajeGeneral("bajar"+ "!" + pieza.getFilaY()+ "!" +pieza.getFilaX() + "!" + indice);
 		}
 	}
 
 	private boolean colisionRotacion(boolean[][] nuevaPieza) {
 			boolean girar=true;
-			int xtmp=p.getFilaX();
-			int ytmp=p.getFilaY();
+			int xtmp=pieza.getFilaX();
+			int ytmp=pieza.getFilaY();
 			int i=0;
 			do {	
 				int j=0;
 					do {
 					if(nuevaPieza[i][j]) {
-						int filaXAux = p.getFilaX()+j;
-						int filaYAux = p.getFilaY()-i;
+						int filaXAux = pieza.getFilaX()+j;
+						int filaYAux = pieza.getFilaY()-i;
 						if(filaXAux<0) {
 							xtmp+=1;
 							}else if(filaXAux>mapa.getGrilla()[0].length-1) {
@@ -273,8 +294,8 @@ public class Juego implements JuegoEventListener{
 			}while(i<nuevaPieza.length && girar);
 	
 			if(girar) {
-				p.setFilaX(xtmp);
-				p.setFilaY(ytmp);	
+				pieza.setFilaX(xtmp);
+				pieza.setFilaY(ytmp);	
 			}
 			return girar;
 	}
@@ -283,16 +304,16 @@ public class Juego implements JuegoEventListener{
 			
 	
 	
-	public void girarPieza(int cliente) { //Odio este codigo
-		boolean[][] nuevaPieza = new boolean[p.getTipo().length][p.getTipo()[0].length];
-		for(int i = 0; i < p.getTipo().length; i++){
-			for(int j = 0; j < p.getTipo()[i].length; j++){
-				nuevaPieza[j][ p.getTipo().length - 1 - i ] = p.getTipo()[i][j]; //i=0 j=1
+	public void girarPieza() { //Odio este codigo
+		boolean[][] nuevaPieza = new boolean[pieza.getTipo().length][pieza.getTipo()[0].length];
+		for(int i = 0; i < pieza.getTipo().length; i++){
+			for(int j = 0; j < pieza.getTipo()[i].length; j++){
+				nuevaPieza[j][ pieza.getTipo().length - 1 - i ] = pieza.getTipo()[i][j]; //i=0 j=1
 			}
 		}
 		if(colisionRotacion(nuevaPieza)) {
-			Mundo.app.getSv().getHs().enviarMensajeGeneral("girar" + "!"+ p.getFilaX()+"!" + p.getFilaY() +"!" + cliente);
-			p.girarTetromino(nuevaPieza, mapa.getSpr().getX()+ p.getTamaño(), mapa.getSpr().getY()+p.getTamaño());
+			Mundo.app.getSv().getHs().enviarMensajeGeneral("girar" + "!"+ pieza.getFilaX()+"!" + pieza.getFilaY() +"!" + indice);
+			pieza.girarTetromino(nuevaPieza, mapa.getSpr().getX()+ pieza.getTamaño(), mapa.getSpr().getY()+pieza.getTamaño());
 		}
 		
 	}
@@ -388,7 +409,54 @@ public class Juego implements JuegoEventListener{
 		return indice;
 	}
 	
+	public void guardarPieza() {
+		if(piezaGuardada== null) {
+			piezaGuardada = new Pieza(pieza.getText(),
+					pieza.getTamaño(),
+					mapa.getSpr().getX()-24,
+					mapa.getSpr().getY()+mapa.getSpr().getHeight()-32,
+					19,
+					4, 
+					pieza.getInd(),
+					pieza.getPieza());
+			nueva=true;
+		}else {
+			
+			Pieza auxP = new Pieza(
+					pieza.getText(),
+					pieza.getTamaño(),
+					mapa.getSpr().getX()-24,
+					mapa.getSpr().getY()+mapa.getSpr().getHeight()-32,
+					19,
+					4, 
+					pieza.getInd(),
+					pieza.getPieza());
+			
+			pieza= new Pieza(
+					piezaGuardada.getText(),
+					piezaGuardada.getTamaño(),
+					pieza.getX(),
+					pieza.getY(),
+					19,
+					4, 
+					piezaGuardada.getInd(),
+					piezaGuardada.getPieza());
+			
+			piezaGuardada = new Pieza(
+					auxP.getText(),
+					auxP.getTamaño(),
+					auxP.getX(), 
+					auxP.getY(),
+					auxP.getFilaY(),
+					auxP.getFilaX(),
+					auxP.getInd(),
+					auxP.getPieza());
+			
+		}
 	
+			
+// new Pieza(sigP.getText(),sigP.getTamaño(), mapa.getSpr().getX()+ mapa.getSpr().getWidth()/2,mapa.getSpr().getY()+mapa.getSpr().getHeight() - 24,sigP.getFilaY(),sigP.getFilaX(), sigP.getInd(), sigP.getPieza());
+	}
 
 }
 
