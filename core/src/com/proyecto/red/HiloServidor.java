@@ -8,6 +8,7 @@ import java.net.SocketException;
 
 import com.proyecto.pantallas.ScreenJuego;
 import com.proyecto.utiles.Mundo;
+import com.proyecto.utiles.Utiles;
 
 public class HiloServidor extends Thread{
 	private DatagramSocket socket;
@@ -53,25 +54,48 @@ public class HiloServidor extends Thread{
 	private void procesarMensaje(DatagramPacket dp) {
 		String msg = (new String(dp.getData())).trim();
 		String[] comando = msg.split("!");
+		
 		int cliente = comando.length-1;
+		
 		if(Mundo.app.getSv().getClientes().size()<2) {
 			if(comando[0].equals("Conexion")) {
 				Mundo.app.getSv().getClientes().add(new Cliente(dp.getAddress(), dp.getPort()));
 				enviarMensaje("OK"+ "!" + Mundo.app.getSv().getClientes().size(), dp.getAddress(), dp.getPort());
-				
 				if(Mundo.app.getSv().getClientes().size()==2) {
 					Mundo.app.setCambio(true);				
 				}
-				
 			}
-			
 		}
+	
+	
+		
 		ScreenJuego sj = null;
 		try {
 			sj = (ScreenJuego) Mundo.app.getScreen();
 		} catch (Exception e) {
-			System.out.println("error");
+			
 		}
+		
+		if(comando[0].equals("cerro")) {
+			enviarMensajeGeneral("termino"+ "!" + comando[cliente]);
+			for (int i = 0; i < Mundo.app.getSv().getClientes().size(); i++) {
+				if(i+1==Integer.valueOf(comando[cliente])) {
+					if(Integer.valueOf(comando[cliente] )== 1) {
+						sj.getJuego().setFin(true);
+					
+					}else {
+						sj.getJuego2().setFin(true);
+					
+					}
+					
+				}
+			}
+			creados=0;
+			Utiles.listeners.removeAll(Utiles.listeners);
+			Mundo.app.setLobby(true);
+			Mundo.app.getSv().getClientes().removeAll(Mundo.app.getSv().getClientes());
+		}
+		
 		if(sj!=null) {
 			if(comando[0].equals("creado")) {
 				creados++;

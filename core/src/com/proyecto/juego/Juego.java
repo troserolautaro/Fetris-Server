@@ -74,21 +74,19 @@ public class Juego implements JuegoEventListener{
 	}
 
 	public void render() {
-		if(!fin) {
-			Mundo.batch.begin();
-			mapa.render();
-			pieza.render();	
-			sigP.render();
-			if(piezaGuardada!=null) {
-				piezaGuardada.render();
-			}
-			Mundo.batch.end();
+		Mundo.batch.begin();
+		mapa.render();
+		pieza.render();	
+		sigP.render();
+		if(piezaGuardada!=null) {
+			piezaGuardada.render();
 		}
+		Mundo.batch.end();
+		
 	}
 
 	public void dispose() {
-		mapa.dispose();
-		pieza.dispose();
+		
 		
 	}
 	
@@ -107,7 +105,6 @@ public class Juego implements JuegoEventListener{
 		boolean moverse =true;
 		float posYAux;
 		int i=0;
-		
 		do { //Verificar si esta colisionando con el mapa
 			Cuadrado c=t[i];
 		posYAux=c.getSpr().getY();
@@ -134,9 +131,9 @@ public class Juego implements JuegoEventListener{
 				}
 			}
 			Mundo.app.getSv().getHs().enviarMensajeGeneral("guardar"+ "!" + pieza.getFilaX()+ "!" +pieza.getFilaY()+ "!" + indice);
-			verifPerder();
 			verifLineaCompl();
 			nueva=true;
+			verifPerder();
 			
 		}
 		
@@ -174,11 +171,12 @@ public class Juego implements JuegoEventListener{
 			do {
 			if(pieza.getTetromino()[i].getYGrilla(mapa.getSpr().getY())>mapa.getGrilla().length-3){ 
 				Mundo.app.getSv().getHs().enviarMensajeGeneral("termino" + "!" + indice);
-				fin=true;
 				Mundo.app.getSv().getHs().setCreados(0);
 				Utiles.listeners.removeAll(Utiles.listeners);
+				
 				Mundo.app.getSv().getClientes().removeAll(Mundo.app.getSv().getClientes());
-				Mundo.app.setLobby(fin);
+				fin=true;
+				Mundo.app.setLobby(true);
 				
 			}
 			i++;
@@ -457,7 +455,12 @@ public class Juego implements JuegoEventListener{
 			
 // new Pieza(sigP.getText(),sigP.getTamaño(), mapa.getSpr().getX()+ mapa.getSpr().getWidth()/2,mapa.getSpr().getY()+mapa.getSpr().getHeight() - 24,sigP.getFilaY(),sigP.getFilaX(), sigP.getInd(), sigP.getPieza());
 	}
-
+	public boolean getFin() {
+		return fin;
+	}
+	public void setFin(boolean fin) {
+		this.fin = fin;
+	}
 }
 
 	

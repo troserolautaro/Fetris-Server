@@ -129,4 +129,5 @@ private boolean primer=true;
 	public Juego getJuego2() {
 		return juego2;
 	}
+	
 }

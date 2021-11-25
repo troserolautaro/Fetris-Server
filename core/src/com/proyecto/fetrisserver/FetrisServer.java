@@ -1,5 +1,7 @@
 package com.proyecto.fetrisserver;
 
+import java.rmi.server.ServerCloneException;
+
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.proyecto.pantallas.ScreenJuego;
@@ -46,6 +48,7 @@ public class FetrisServer extends Game {
 	}
 	@Override
 	public void dispose () {
+		sv.getHs().enviarMensajeGeneral("cerro");
 		Mundo.batch.dispose();
 	}
 	
