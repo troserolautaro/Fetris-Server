@@ -24,7 +24,9 @@ public class Juego implements JuegoEventListener{
 	private Pieza piezaGuardada;
 	private int indice;
 	private boolean fin =false;
-	
+	private float duracionPowerUps = 10;
+	private boolean velocidadActivado	= false;
+	private float duracion;
 	public Juego(boolean mapa) {
 		Utiles.listeners.add(this);
 		this.mapa = new Mapa(mapa);
@@ -47,12 +49,12 @@ public class Juego implements JuegoEventListener{
 	}
 	
 	
-	private void sigPieza() {	
-		Mundo.app.getSv().getHs().enviarMensajeGeneral("crearPieza" + "!" + indice);
-		pieza = new Pieza(sigP.getText(),sigP.getTamaño(), mapa.getSpr().getX()+ mapa.getSpr().getWidth()/2,mapa.getSpr().getY()+mapa.getSpr().getHeight() - 24,sigP.getFilaY(),sigP.getFilaX(), sigP.getInd(), sigP.getPieza());
-		
-		//		p= new Pieza(Assets.manager.get(Colores.values()[text].getDir(), Texture.class) ,12,mapa.getSpr().getWidth()/2, mapa.getSpr().getHeight() - 24,19,4, pieza, mapa.getSpr().getX(), mapa.getSpr().getY());
-		
+	private void sigPieza() {
+		pieza = new Pieza(sigP.getText(),sigP.getTamaño(), mapa.getSpr().getX()+ mapa.getSpr().getWidth()/2,mapa.getSpr().getY()+mapa.getSpr().getHeight() + sigP.getTamaño()*3,sigP.getFilaY(),sigP.getFilaX(), sigP.getInd(), sigP.getPieza());
+		Mundo.app.getSv().getHs().enviarMensajeGeneral("crearPieza" + "!" +
+						pieza.getFilaX()  + "!" +
+						pieza.getFilaY()  + "!" +
+						indice);
 	}
 	
 
@@ -60,11 +62,17 @@ public class Juego implements JuegoEventListener{
 	public void nuevaPieza() {
 		int ind = Utiles.r.nextInt(Colores.values().length-1);
 		if(indice==1) {
-			sigP = new Pieza(Assets.manager.get(Colores.values()[ind].getDir(),Texture.class), 12,Config.ANCHO/4-24 , Config.ALTO/4 + 12 ,19,4,ind);
+			sigP = new Pieza(Assets.manager.get(Colores.values()[ind].getDir(),Texture.class), 12,Config.ANCHO/4-24 , Config.ALTO/4 + 12 ,24,4,ind);
 		}else {
-			sigP = new Pieza(Assets.manager.get(Colores.values()[ind].getDir(),Texture.class), 12,Config.ANCHO/4+24 , Config.ALTO/4 + 12 ,19,4, ind);
+			sigP = new Pieza(Assets.manager.get(Colores.values()[ind].getDir(),Texture.class), 12,Config.ANCHO/4+24 , Config.ALTO/4 + 12 ,24,4, ind);
 		}
-		Mundo.app.getSv().getHs().enviarMensajeGeneral("crearSigPieza" + "!" + ind + "!" + sigP.getPieza() + "!" + indice);
+		Mundo.app.getSv().getHs().enviarMensajeGeneral("crearSigPieza" + "!" + 
+														ind + "!" + 
+														sigP.getPieza() + "!" +
+														sigP.getFilaX() + "!" +
+														sigP.getFilaY() + "!" +
+														sigP.getTamaño() + "!" +
+														indice);
 	
 	}
 	
@@ -73,7 +81,7 @@ public class Juego implements JuegoEventListener{
 		return mapa;
 	}
 
-	public void render() {
+	public void render(float delta) {
 		Mundo.batch.begin();
 		mapa.render();
 		pieza.render();	
@@ -82,7 +90,13 @@ public class Juego implements JuegoEventListener{
 			piezaGuardada.render();
 		}
 		Mundo.batch.end();
-		
+		if(velocidadActivado) {
+			duracion+=delta;
+			if(duracionPowerUps < duracion) {
+				cambioVelocidad(0.6f);
+				duracion = 0;
+			}
+		}
 	}
 
 	public void dispose() {
@@ -165,22 +179,26 @@ public class Juego implements JuegoEventListener{
 		}
 	}
 	
-
 	private void verifPerder() {
 		int i = 0;
 			do {
-			if(pieza.getTetromino()[i].getYGrilla(mapa.getSpr().getY())>mapa.getGrilla().length-3){ 
-				Mundo.app.getSv().getHs().enviarMensajeGeneral("termino" + "!" + indice);
-				Mundo.app.getSv().getHs().setCreados(0);
-				Utiles.listeners.removeAll(Utiles.listeners);
-				
-				Mundo.app.getSv().getClientes().removeAll(Mundo.app.getSv().getClientes());
-				fin=true;
-				Mundo.app.setLobby(true);
-				
-			}
+				int j = 0;
+				do {
+					if(mapa.getGrilla()[i][j] && i==19){ 
+						Mundo.app.getSv().getHs().enviarMensajeGeneral("termino" + "!" + indice);
+						Mundo.app.getSv().getHs().setCreados(0);
+						Utiles.listeners.removeAll(Utiles.listeners);
+						
+						Mundo.app.getSv().getClientes().removeAll(Mundo.app.getSv().getClientes());
+						fin=true;
+						Mundo.app.setLobby(true);
+						
+					}
+				j++;	
+				}while(j<mapa.getGrilla()[i].length && !fin );
+			
 			i++;
-			}while(i<pieza.getTetromino().length && !fin);
+			}while(i<mapa.getGrilla().length && !fin);
 			
 	}
 	
@@ -253,7 +271,7 @@ public class Juego implements JuegoEventListener{
 				pieza.getTetromino()[i].getSpr().setY(pos);
 			}
 		pieza.setFilaY(pieza.getFilaY()-1);
-		Mundo.app.getSv().getHs().enviarMensajeGeneral("bajar"+ "!" + pieza.getFilaY()+ "!" +pieza.getFilaX() + "!" + indice);
+		Mundo.app.getSv().getHs().enviarMensajeGeneral("bajar"+ "!" + pieza.getFilaY()+ "!" + pieza.getFilaX() + "!" + indice);
 		}
 	}
 
@@ -310,8 +328,9 @@ public class Juego implements JuegoEventListener{
 			}
 		}
 		if(colisionRotacion(nuevaPieza)) {
-			Mundo.app.getSv().getHs().enviarMensajeGeneral("girar" + "!"+ pieza.getFilaX()+"!" + pieza.getFilaY() +"!" + indice);
 			pieza.girarTetromino(nuevaPieza, mapa.getSpr().getX()+ pieza.getTamaño(), mapa.getSpr().getY()+pieza.getTamaño());
+			Mundo.app.getSv().getHs().enviarMensajeGeneral("girar" + "!"+ pieza.getFilaX()+"!" + pieza.getFilaY() +"!" + indice);
+			
 		}
 		
 	}
@@ -337,19 +356,28 @@ public class Juego implements JuegoEventListener{
 			if(mapa.getCuadrados().size()>0) {
 				mapa.bajarCuadrados(indice);
 			}
-			enviarLineas(lineas);
+			if(lineas==4) {
+				for (int i = 0; i < Utiles.listeners.size(); i++) {
+						if(Utiles.listeners.get(i)!=this) {
+							Utiles.listeners.get(i).cambioVelocidad(0.3f);
+						}	
+				}
+					
+			}
+			enviarLineas((int) (lineas/1.5f));
 		}
 	}
 	
 	
 	@Override
 	public void enviarLineas(int lineas) {
-		for (int i = 0; i < Utiles.listeners.size(); i++) {
-			if(Utiles.listeners.get(i)!=this) {
-				Utiles.listeners.get(i).recibirLineas(lineas);
+		if(lineas>0) {
+			for (int i = 0; i < Utiles.listeners.size(); i++) {
+				if(Utiles.listeners.get(i)!=this) {
+					Utiles.listeners.get(i).recibirLineas(lineas);
+				}
 			}
 		}
-		
 		
 	}
 	
@@ -371,11 +399,9 @@ public class Juego implements JuegoEventListener{
 		for (int i = 0; i < mapa.getGrilla()[y].length; i++) {
 			if(i!=bloqueBorrado) {
 				mapa.getCuadrados().add((new Cuadrado(Assets.manager.get(Colores.AMARILLO.getDir(),Texture.class), 12, i*12 + mapa.getSpr().getX()+12 , y + mapa.getSpr().getY() +12 )));
+				mapa.agregarAGrilla(mapa.getCuadrados().get(mapa.getCuadrados().size()-1));
 			}
 			
-		}
-		for (int i = 0; i < mapa.getCuadrados().size(); i++) {
-			mapa.agregarAGrilla(mapa.getCuadrados().get(i));
 		}
 	}
 	
@@ -413,8 +439,8 @@ public class Juego implements JuegoEventListener{
 					pieza.getTamaño(),
 					mapa.getSpr().getX()-24,
 					mapa.getSpr().getY()+mapa.getSpr().getHeight()-32,
-					19,
-					4, 
+					sigP.getFilaY(),
+					sigP.getFilaX(), 
 					pieza.getInd(),
 					pieza.getPieza());
 			nueva=true;
@@ -425,8 +451,8 @@ public class Juego implements JuegoEventListener{
 					pieza.getTamaño(),
 					mapa.getSpr().getX()-24,
 					mapa.getSpr().getY()+mapa.getSpr().getHeight()-32,
-					19,
-					4, 
+					sigP.getFilaY(),
+					sigP.getFilaX(), 
 					pieza.getInd(),
 					pieza.getPieza());
 			
@@ -435,8 +461,8 @@ public class Juego implements JuegoEventListener{
 					piezaGuardada.getTamaño(),
 					pieza.getX(),
 					pieza.getY(),
-					19,
-					4, 
+					sigP.getFilaY(),
+					sigP.getFilaX(), 
 					piezaGuardada.getInd(),
 					piezaGuardada.getPieza());
 			
@@ -452,14 +478,49 @@ public class Juego implements JuegoEventListener{
 			
 		}
 	
-			
-// new Pieza(sigP.getText(),sigP.getTamaño(), mapa.getSpr().getX()+ mapa.getSpr().getWidth()/2,mapa.getSpr().getY()+mapa.getSpr().getHeight() - 24,sigP.getFilaY(),sigP.getFilaX(), sigP.getInd(), sigP.getPieza());
+		Mundo.app.getSv().getHs().enviarMensaje("guardarPieza"+ "!" + sigP.getFilaY()+ "!" + sigP.getFilaX()+ "!" + indice, Mundo.app.getSv().getClientes().get(indice-1).getIp(),Mundo.app.getSv().getClientes().get(indice-1).getPuerto());
+		// new Pieza(sigP.getText(),sigP.getTamaño(), mapa.getSpr().getX()+ mapa.getSpr().getWidth()/2,mapa.getSpr().getY()+mapa.getSpr().getHeight() - 24,sigP.getFilaY(),sigP.getFilaX(), sigP.getInd(), sigP.getPieza());
 	}
 	public boolean getFin() {
 		return fin;
 	}
 	public void setFin(boolean fin) {
 		this.fin = fin;
+	}
+
+
+	@Override
+	public void cambioVelocidad(float vel) {
+		intervaloCaida=vel;
+		if(!velocidadActivado) {
+			velocidadActivado = true;
+		}else {
+			velocidadActivado=false;
+		}
+	}
+	public void bomba() {
+		int y = Utiles.r.nextInt(2)+2;
+		Mundo.app.getSv().getHs().enviarMensajeGeneral("bomba"+"!"+indice);
+		ArrayList<Cuadrado> tmpBorrar = new ArrayList <Cuadrado>();
+		for (int j = 0; j < mapa.getCuadrados().size(); j++) {
+				if(y>mapa.getCuadrados().get(j).getYGrilla(mapa.getSpr().getY())) {
+					mapa.getGrilla()[mapa.getCuadrados().get(j).getYGrilla(mapa.getSpr().getY())][mapa.getCuadrados().get(j).getXGrilla(mapa.getSpr().getX())]=false;
+					tmpBorrar.add(mapa.getCuadrados().get(j));
+				}
+		}
+		for (int i = 0; i < tmpBorrar.size(); i++) {
+			int j=0;
+			boolean bandera=false;
+			do {
+				if(tmpBorrar.get(i)==mapa.getCuadrados().get(j)) {
+					mapa.getCuadrados().remove(mapa.getCuadrados().get(j));
+					bandera=true;
+				}
+				j++;
+			}while(j<mapa.getCuadrados().size() && !bandera);
+		}
+		tmpBorrar.removeAll(tmpBorrar);	
+		mapa.bajarCuadrados(indice);
 	}
 }
 

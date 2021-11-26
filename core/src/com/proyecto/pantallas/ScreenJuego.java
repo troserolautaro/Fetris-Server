@@ -35,8 +35,8 @@ private boolean primer=true;
 			Gdx.gl.glClearColor(0, 0, 0, 0);
 			Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 			update(delta);
-			juego.render();
-			juego2.render();	
+			juego.render(delta);
+			juego2.render(delta);	
 		}
 			
 //			debug();			

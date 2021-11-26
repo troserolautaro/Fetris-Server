@@ -77,17 +77,19 @@ public class HiloServidor extends Thread{
 		}
 		
 		if(comando[0].equals("cerro")) {
-			enviarMensajeGeneral("termino"+ "!" + comando[cliente]);
-			for (int i = 0; i < Mundo.app.getSv().getClientes().size(); i++) {
-				if(i+1==Integer.valueOf(comando[cliente])) {
-					if(Integer.valueOf(comando[cliente] )== 1) {
-						sj.getJuego().setFin(true);
-					
-					}else {
-						sj.getJuego2().setFin(true);
-					
+			if(Mundo.app.getScreen()==sj) {
+				enviarMensajeGeneral("termino"+ "!" + comando[cliente]);
+				for (int i = 0; i < Mundo.app.getSv().getClientes().size(); i++) {
+					if(i+1==Integer.valueOf(comando[cliente])) {
+						if(Integer.valueOf(comando[cliente] )== 1) {
+							sj.getJuego().setFin(true);
+						
+						}else {
+							sj.getJuego2().setFin(true);
+						
+						}
+						
 					}
-					
 				}
 			}
 			creados=0;
@@ -132,6 +134,13 @@ public class HiloServidor extends Thread{
 					sj.getJuego().guardarPieza();	 
 				}else {
 					sj.getJuego2().guardarPieza();	 
+				}
+			}
+			if(comando[0].equals("bomba")) {
+				if(sj.getJuego().getIndice() ==Integer.valueOf(comando[cliente])) {
+					sj.getJuego().bomba();	 
+				}else {
+					sj.getJuego2().bomba();	 
 				}
 			}
 		}
